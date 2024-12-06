@@ -1,20 +1,35 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
+import 'dart:async'; //import timer
+
 
 class UserProvider with ChangeNotifier {
   final List<User> _users = []; // Daftar semua user
   User? _loggedInUser; // User yang sedang login
 
+  Timer? _timer; // Timer for screen time countdown
+  int _screenTimeRemaining = 0; // Remaining screen time in minutes
+
   List<User> get users => _users;
   User? get loggedInUser => _loggedInUser;
+  int get screenTimeRemaining => _screenTimeRemaining; // Expose remaining screen time
 
   // Login user berdasarkan email dan password
   void login(String email, String password) {
     _loggedInUser = _users.firstWhere(
-      (user) => user.email == email && user.password == password,
+          (user) => user.email == email && user.password == password,
       orElse: () => throw Exception('User not found'),
     );
-    _loggedInUser!.isLoggedIn = true; // Set status login
+    _loggedInUser!.isLoggedIn = true;
+
+    // Add initialization of screen time for child users
+    if (_loggedInUser?.role == 'Anak') {
+      _screenTimeRemaining = _loggedInUser?.screenTime ?? 0;
+      if (_screenTimeRemaining > 0) {
+        startCountdown();
+      }
+    }
+
     notifyListeners();
   }
 
@@ -23,6 +38,7 @@ class UserProvider with ChangeNotifier {
     if (_loggedInUser != null) {
       _loggedInUser!.isLoggedIn = false; // Reset status login
       _loggedInUser = null;
+      stopCountdown(); // Stop countdown when user logs out
       notifyListeners();
     }
   }
@@ -65,7 +81,7 @@ class UserProvider with ChangeNotifier {
       return null; // Hanya orang tua yang bisa melihat anak
     }
     return _users.firstWhere(
-      (user) => user.id == childId && user.role == 'Anak',
+          (user) => user.id == childId && user.role == 'Anak',
       orElse: () =>
           User(email: '', password: '', username: '', role: '', id: ''),
     );
@@ -89,8 +105,39 @@ class UserProvider with ChangeNotifier {
       int index = _users.indexWhere((user) => user.id == child.id);
       if (index != -1) {
         _users[index] = updatedChild;
+
+        if(_loggedInUser?.id == childId) {
+          _screenTimeRemaining = screenTimeInMinutes; // Initialize countdown
+          stopCountdown(); // stop the countdown
+          startCountdown(); // Start countdown for new screen time
+
+        }
         notifyListeners(); // Notifikasi perubahan ke UI
       }
     }
+  }
+
+  // Start the countdown timer
+  void startCountdown() {
+    _timer?.cancel(); // Cancel any existing timer
+    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      if (_screenTimeRemaining > 0) {
+        _screenTimeRemaining--; //this should decrease the time by a minute
+        notifyListeners(); //
+      } else {
+        _timer?.cancel(); // Stop timer when time is up
+      }
+    });
+  }
+
+  // Stop the countdown timer
+  void stopCountdown() {
+    _timer?.cancel();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Clean up timer when provider is disposed
+    super.dispose();
   }
 }
