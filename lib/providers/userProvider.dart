@@ -8,7 +8,7 @@ class UserProvider with ChangeNotifier {
   User? _loggedInUser; // User yang sedang login
 
   Timer? _timer; // Timer for screen time countdown
-  int _screenTimeRemaining = 0; // Remaining screen time in minutes
+  int _screenTimeRemaining = 0; // Remaining screen time in minutes, it always starts at 0 for default value
 
   List<User> get users => _users;
   User? get loggedInUser => _loggedInUser;
@@ -107,12 +107,12 @@ class UserProvider with ChangeNotifier {
         _users[index] = updatedChild;
 
         if(_loggedInUser?.id == childId) {
-          _screenTimeRemaining = screenTimeInMinutes; // Initialize countdown
+          _screenTimeRemaining = screenTimeInMinutes; // Initialize countdown basically starting it
           stopCountdown(); // stop the countdown
           startCountdown(); // Start countdown for new screen time
 
         }
-        notifyListeners(); // Notifikasi perubahan ke UI
+        notifyListeners(); // Notifikasi perubahan ke UI it'll change the ui basically
       }
     }
   }
