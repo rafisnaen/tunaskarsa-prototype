@@ -83,11 +83,13 @@ class _ChildDetailPageState extends State<ChildDetailPage> {
                   if (_screenTime != null) {
                     userProvider.saveScreenTime(child.id, _screenTime!);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Screen time berhasil diperbarui')),
+                      const SnackBar(
+                          content: Text('Screen time berhasil diperbarui')),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Masukkan waktu layar yang valid')),
+                      const SnackBar(
+                          content: Text('Masukkan waktu layar yang valid')),
                     );
                   }
                 },

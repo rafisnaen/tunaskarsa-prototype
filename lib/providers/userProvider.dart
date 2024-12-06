@@ -46,13 +46,17 @@ class UserProvider with ChangeNotifier {
   // Mendapatkan daftar anak untuk orang tua yang sedang login
   List<User> getChildrenForLoggedInUser() {
     if (_loggedInUser == null) return [];
-    return _users.where((user) => user.role == 'Anak').toList(); // Filter berdasarkan role "Anak"
+    return _users
+        .where((user) => user.role == 'Anak')
+        .toList(); // Filter berdasarkan role "Anak"
   }
 
   // Mendapatkan daftar orang tua untuk anak yang sedang login
   List<User> getParentForLoggedInUser() {
     if (_loggedInUser == null) return [];
-    return _users.where((user) => user.role == 'Orang Tua').toList(); // Filter berdasarkan role "Orang Tua"
+    return _users
+        .where((user) => user.role == 'Orang Tua')
+        .toList(); // Filter berdasarkan role "Orang Tua"
   }
 
   // Mendapatkan anak berdasarkan ID
@@ -62,7 +66,8 @@ class UserProvider with ChangeNotifier {
     }
     return _users.firstWhere(
       (user) => user.id == childId && user.role == 'Anak',
-      orElse: () => User(email: '', password: '', username: '', role: '', id: ''),
+      orElse: () =>
+          User(email: '', password: '', username: '', role: '', id: ''),
     );
   }
 
@@ -76,7 +81,9 @@ class UserProvider with ChangeNotifier {
     if (child != null) {
       // Update waktu layar anak
       final updatedChild = child.copyWith(
-        screenTime: screenTimeInMinutes, username: '', email: '',
+        screenTime: screenTimeInMinutes,
+        username: child.username,
+        email: child.email,
       );
       // Update daftar user dengan data anak yang sudah diubah
       int index = _users.indexWhere((user) => user.id == child.id);

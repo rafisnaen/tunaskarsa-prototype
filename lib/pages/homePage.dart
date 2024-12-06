@@ -161,6 +161,18 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+            if(user?.role == 'Anak')...[
+              Text(
+                'Screentime ${user?.screenTime ?? "Habis"}0',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF685752),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ],
         ),
       ),
