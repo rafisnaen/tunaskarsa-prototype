@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 class QuizPage extends StatefulWidget {
   final Map<String, dynamic> topic;
-  final VoidCallback onQuizCompleted; // Callback untuk update status
+  // final VoidCallback onQuizCompleted; // Callback untuk update status
+  final Function(bool isPerfect) onQuizCompleted;
 
   QuizPage({required this.topic, required this.onQuizCompleted});
 
@@ -25,7 +26,9 @@ class _QuizPageState extends State<QuizPage> {
 
     if (currentQuestion >= widget.topic['questions'].length) {
       // Tandai quiz selesai
-      widget.onQuizCompleted();
+      bool isPerfect = correctAnswers == widget.topic['questions'].length;
+      widget.onQuizCompleted(isPerfect);
+      // widget.onQuizCompleted();
     }
   }
 
@@ -40,7 +43,9 @@ class _QuizPageState extends State<QuizPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text("Benar: $correctAnswers", style: TextStyle(fontSize: 20)),
-              Text("Salah: ${widget.topic['questions'].length - correctAnswers}", style: TextStyle(fontSize: 20)),
+              Text(
+                  "Salah: ${widget.topic['questions'].length - correctAnswers}",
+                  style: TextStyle(fontSize: 20)),
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);

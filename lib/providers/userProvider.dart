@@ -166,4 +166,10 @@ class UserProvider with ChangeNotifier {
     _timer?.cancel(); // Clean up timer when provider is disposed
     super.dispose();
   }
+
+  void addTime(int reward) {
+    _screenTimeRemaining = _screenTimeRemaining + reward;
+    _screenTimeRemaining = _screenTimeRemaining * 60;
+    print('tambah');
+  }
 }
