@@ -8,7 +8,6 @@ import 'package:tunaskarsa/pages/schedulePage.dart'; // Buat halaman schedule
 import 'package:tunaskarsa/pages/progressQuizPage.dart'; // Buat halaman progress quiz
 import 'package:tunaskarsa/providers/userProvider.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -110,9 +109,14 @@ class HomeScreen extends StatelessWidget {
               Consumer<UserProvider>(
                 builder: (context, provider, child) {
                   final screenTime = provider.screenTimeRemaining;
-                  print('Screen time remaining: $screenTime'); // Debugging line incase if the timer is not working
+                  final formatTime = provider.formattedTime;
+                  print(
+                      'Screen time remaining: $screenTime'); // Debugging line incase if the timer is not working
+
+                  provider.redirectQuiz();
+
                   return Text(
-                    'Screen Time Remaining: ${screenTime > 0 ? screenTime : "No time left"} minutes',
+                    'Screen Time Remaining: ${screenTime > 0 ? formatTime : "No time left"} minutes',
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -127,7 +131,8 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => QuizHomePage()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => QuizHomePage()));
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF8EB486),

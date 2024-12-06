@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:tunaskarsa/main.dart';
+import 'package:tunaskarsa/pages/quizHomePage.dart';
 import '../models/user.dart';
 import 'dart:async'; //import timer
-
 
 class UserProvider with ChangeNotifier {
   final List<User> _users = []; // Daftar semua user
   User? _loggedInUser; // User yang sedang login
 
   Timer? _timer; // Timer for screen time countdown
-  int _screenTimeRemaining = 0; // Remaining screen time in minutes, it always starts at 0 for default value
+  int _screenTimeRemaining =
+      0; // Remaining screen time in minutes, it always starts at 0 for default value
 
   List<User> get users => _users;
   User? get loggedInUser => _loggedInUser;
-  int get screenTimeRemaining => _screenTimeRemaining; // Expose remaining screen time
+  int get screenTimeRemaining =>
+      _screenTimeRemaining; // Expose remaining screen time
+  String get formattedTime => formatTime;
 
   // Login user berdasarkan email dan password
   void login(String email, String password) {
     _loggedInUser = _users.firstWhere(
-          (user) => user.email == email && user.password == password,
+      (user) => user.email == email && user.password == password,
       orElse: () => throw Exception('User not found'),
     );
     _loggedInUser!.isLoggedIn = true;
@@ -81,7 +86,7 @@ class UserProvider with ChangeNotifier {
       return null; // Hanya orang tua yang bisa melihat anak
     }
     return _users.firstWhere(
-          (user) => user.id == childId && user.role == 'Anak',
+      (user) => user.id == childId && user.role == 'Anak',
       orElse: () =>
           User(email: '', password: '', username: '', role: '', id: ''),
     );
@@ -106,11 +111,11 @@ class UserProvider with ChangeNotifier {
       if (index != -1) {
         _users[index] = updatedChild;
 
-        if(_loggedInUser?.id == childId) {
-          _screenTimeRemaining = screenTimeInMinutes; // Initialize countdown basically starting it
+        if (_loggedInUser?.id == childId) {
+          _screenTimeRemaining =
+              screenTimeInMinutes; // Initialize countdown basically starting it
           stopCountdown(); // stop the countdown
           startCountdown(); // Start countdown for new screen time
-
         }
         notifyListeners(); // Notifikasi perubahan ke UI it'll change the ui basically
       }
@@ -120,14 +125,35 @@ class UserProvider with ChangeNotifier {
   // Start the countdown timer
   void startCountdown() {
     _timer?.cancel(); // Cancel any existing timer
-    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+    _screenTimeRemaining = _screenTimeRemaining * 60;
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_screenTimeRemaining > 0) {
         _screenTimeRemaining--; //this should decrease the time by a minute
         notifyListeners(); //
+        print('Screen time remaining: $_screenTimeRemaining');
       } else {
         _timer?.cancel(); // Stop timer when time is up
+        redirectQuiz();
       }
     });
+  }
+
+  void redirectQuiz() {
+    if (_screenTimeRemaining == 0) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        MyApp.navigatorKey.currentState?.push(
+          MaterialPageRoute(builder: (context) => QuizHomePage()),
+        );
+      });
+
+      print('Aplikasi seharusnya terbuka sekarang');
+    }
+  }
+
+  String get formatTime {
+    int minutes = _screenTimeRemaining ~/ 60;
+    int seconds = _screenTimeRemaining % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
   // Stop the countdown timer
