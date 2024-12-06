@@ -7,7 +7,7 @@ import 'package:tunaskarsa/pages/profilePage.dart'; // Buat halaman profile
 import 'package:tunaskarsa/pages/schedulePage.dart'; // Buat halaman schedule
 import 'package:tunaskarsa/pages/progressQuizPage.dart'; // Buat halaman progress quiz
 import 'package:tunaskarsa/providers/userProvider.dart';
-import 'dart:async'; //import timer
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -65,55 +65,8 @@ class _HomePageState extends State<HomePage> {
 }
 
 // Komponen untuk halaman Home
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  Timer? _timer; // Timer countdown
-  int _currentScreenTime = 0; // display current timer dalam menit
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeScreenTime();
-  }
-
-  // TImer
-  void _initializeScreenTime() {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final user = userProvider.loggedInUser;
-
-    if (user?.role == 'Anak') {
-      // Set the initial screen time for the user (if it's not null)
-      _currentScreenTime = user?.screenTime ?? 0;
-      _startCountdown(); // mulai countdown dari screentime
-    }
-  }
-
-  // Start the countdown to decrement the screen time
-  void _startCountdown() {
-    if (_currentScreenTime > 0) {
-      _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
-        setState(() {
-          if (_currentScreenTime > 0) {
-            _currentScreenTime--; // kurang screen time 1 minute
-          } else {
-            _timer?.cancel(); // timernya diberhentikan jika sudah sampai 0
-          }
-        });
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel(); // Cancel the timer to avoid memory leaks
-    super.dispose();
-  }
-
-
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
     final user = userProvider.loggedInUser;
@@ -152,50 +105,29 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 40),
 
-            // Jika user adalah orang tua, tampilkan daftar anak yang terhubung
-            if (user?.role == 'Orang Tua') ...[
-              const Text(
-                'Your Connected Children:',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF685752),
-                ),
-              ),
-              const SizedBox(height: 10),
+            // If the user is a child, display the remaining screen time in the homepage
+            if (user?.role == 'Anak') ...[
               Consumer<UserProvider>(
                 builder: (context, provider, child) {
-                  final connectedChildren = provider
-                      .getChildrenForLoggedInUser();
-                  if (connectedChildren.isEmpty) {
-                    return const Text('No children connected.');
-                  } else {
-                    return Column(
-                      children: connectedChildren
-                          .map(
-                            (child) =>
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 4.0),
-                              child: Text(
-                                '${child.username} - ${child.email}',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            ),
-                      )
-                          .toList(),
-                    );
-                  }
+                  final screenTime = provider.screenTimeRemaining;
+                  print('Screen time remaining: $screenTime'); // Debugging line incase if the timer is not working
+                  return Text(
+                    'Screen Time Remaining: ${screenTime > 0 ? screenTime : "No time left"} minutes',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF685752),
+                    ),
+                    textAlign: TextAlign.center,
+                  );
                 },
               ),
             ],
 
             const SizedBox(height: 40),
-            // Tombol Play Quiz
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => QuizHomePage()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => QuizHomePage()));
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF8EB486),
@@ -213,18 +145,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
-            if(user?.role == 'Anak')...[
-              Text(
-                'Screentime ${_currentScreenTime} Menit ',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF685752),
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
           ],
         ),
       ),
