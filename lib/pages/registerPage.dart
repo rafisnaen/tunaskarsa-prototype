@@ -26,30 +26,31 @@ class _RegisterPageState extends State<RegisterPage> {
   final List<String> _grades = ['SD', 'SMP', 'SMA'];
 
   void register(BuildContext context) {
-    if (_formKey.currentState!.validate()) {
-      // Membuat objek User
-      User newUser = User(
-        username: _usernameController.text,
-        email: _emailController.text,
-        password: _passwordController.text,
-        role: _selectedRole!,
-        grade: _selectedRole == 'Anak' ? _selectedGrade : null,
-      );
+  if (_formKey.currentState!.validate()) {
+    // Membuat objek User dengan id unik
+    User newUser = User(
+      id: DateTime.now().millisecondsSinceEpoch.toString(), // Membuat ID unik berdasarkan waktu
+      username: _usernameController.text,
+      email: _emailController.text,
+      password: _passwordController.text,
+      role: _selectedRole!,
+      grade: _selectedRole == 'Anak' ? _selectedGrade : null,
+    );
 
-      // Tambahkan user ke provider
-      Provider.of<UserProvider>(context, listen: false).registerUser(newUser);
+    // Tambahkan user ke provider
+    Provider.of<UserProvider>(context, listen: false).registerUser(newUser);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("User registered successfully!")),
-      );
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("User registered successfully!")),
+    );
 
-      // Navigasi ke halaman login
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      );
-    }
+    // Navigasi ke halaman login
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
   }
+}
 
   @override
   void dispose() {

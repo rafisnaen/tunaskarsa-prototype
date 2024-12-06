@@ -22,47 +22,39 @@ class _LoginPageState extends State<LoginPage> {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    // Cek apakah email dan password sesuai dengan data
-    final user = userProvider.users.firstWhere(
-      (user) => user.email == email && user.password == password,
-      orElse: () => User(email: '', password: '', username: '', role: ''), // Gunakan objek default
-    );
+    try {
+      // Cek apakah email dan password sesuai dengan data
+      userProvider.login(email, password);
 
-    // Cek apakah user ditemukan
-    if (user.email.isEmpty) {
-      // User tidak ditemukan
-    }
+      final user = userProvider.loggedInUser;
 
+      // Navigasi berdasarkan role user
+      if (user != null) {
+        if (user.role == 'Anak') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        } else if (user.role == 'Orang Tua') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ListChildPage()),
+          );
+        }
 
-    if (user != null) {
-       if (user.role == 'Anak') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
+        // Tampilkan pesan selamat datang
         ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Welcome, ${user.username}!')),
-      );
-      } else if (user.role == 'Orang Tua') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const ListChildPage()),
-        );
-        ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Welcome, ${user.username}!')),
-      );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Role tidak valid atau User tidak ditemukan!")),
+          SnackBar(content: Text('Welcome, ${user.username}!')),
         );
       }
-    } else {
-      // Login gagal
+    } catch (e) {
+      // Jika user tidak ditemukan
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid email or password!')),
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
