@@ -138,7 +138,7 @@ class UserProvider with ChangeNotifier {
         notifyListeners();
         print('Screen time remaining: $_screenTimeRemaining');
       } else {
-        _timer?.cancel(); // Stop timer when time is up
+        _timer?.cancel(); 
         redirectQuiz();
       }
     });
