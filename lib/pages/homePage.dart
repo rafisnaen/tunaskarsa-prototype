@@ -113,8 +113,6 @@ class HomeScreen extends StatelessWidget {
                   print(
                       'Screen time remaining: $screenTime'); // Debugging line incase if the timer is not working
 
-                  // provider.redirectQuiz();
-
                   return Text(
                     'Screen Time Remaining: ${screenTime > 0 ? formatTime : "No time left"} minutes',
                     style: const TextStyle(

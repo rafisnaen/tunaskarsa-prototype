@@ -169,7 +169,10 @@ class UserProvider with ChangeNotifier {
 
   void addTime(int reward) {
     _screenTimeRemaining = _screenTimeRemaining + reward;
-    _screenTimeRemaining = _screenTimeRemaining * 60;
     print('tambah');
+    stopCountdown();
+    startCountdown();
+    notifyListeners();
+    print('countdown');
   }
 }
