@@ -109,12 +109,12 @@ class HomeScreen extends StatelessWidget {
               Consumer<UserProvider>(
                 builder: (context, provider, child) {
                   final screenTime = provider.screenTimeRemaining;
-                  final formatTime = provider.formattedTime;
+                  // final formatTime = provider.formattedTime;
                   print(
                       'Screen time remaining: $screenTime'); // Debugging line incase if the timer is not working
 
                   return Text(
-                    'Screen Time Remaining: ${screenTime > 0 ? formatTime : "No time left"} minutes',
+                    'Screen Time Remaining: ${screenTime != "00:00" ? screenTime : "No time left"} minutes',
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,

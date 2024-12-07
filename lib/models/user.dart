@@ -7,7 +7,9 @@ class User {
   final String? grade;
   bool isLoggedIn;
   List<String> connections;
-  int? screenTime; // Waktu layar yang tersisa (hanya untuk Anak)
+  int? screenTime;
+  DateTime?
+      screenTimeEndAt; // Waktu layar yang tersisa (hanya untuk Anak dalam bentuk datetime, agar persistent, tidak reset setiap logout)
 
   User({
     required this.id,
@@ -19,10 +21,16 @@ class User {
     this.isLoggedIn = false,
     this.connections = const [],
     this.screenTime,
+    this.screenTimeEndAt,
   });
 
   // CopyWith untuk mengubah screenTime
-  User copyWith({int? screenTime, required String username, required String email}) {
+  User copyWith({
+    int? screenTime,
+    required String username,
+    required String email,
+    DateTime? screenTimeEndAt,
+  }) {
     return User(
       id: id,
       username: username ?? this.username,
@@ -33,6 +41,7 @@ class User {
       isLoggedIn: isLoggedIn,
       connections: connections,
       screenTime: screenTime ?? this.screenTime,
+      screenTimeEndAt: screenTimeEndAt ?? this.screenTimeEndAt,
     );
   }
 }

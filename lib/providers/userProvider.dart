@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:tunaskarsa/main.dart';
 import 'package:tunaskarsa/pages/quizHomePage.dart';
 import '../models/user.dart';
@@ -10,14 +11,15 @@ class UserProvider with ChangeNotifier {
   User? _loggedInUser; // User yang sedang login
 
   Timer? _timer; // Timer for screen time countdown
-  int _screenTimeRemaining =
-      0; // Remaining screen time in minutes, it always starts at 0 for default value
-
+  String _screenTimeRemaining =
+      "00:00"; // Remaining screen time in minutes, it always starts at 0 for default value
+  DateTime?
+      _screenTimeEndAt; // Berakhirnya screen time dalam bentuk datetime agar persistent meskipun logout gabakal reset ke nilai awal
   List<User> get users => _users;
   User? get loggedInUser => _loggedInUser;
-  int get screenTimeRemaining =>
+  String get screenTimeRemaining =>
       _screenTimeRemaining; // Expose remaining screen time
-  String get formattedTime => formatTime;
+  // String get formattedTime => formatTime;
 
   // Login user berdasarkan email dan password
   void login(String email, String password) {
@@ -29,8 +31,9 @@ class UserProvider with ChangeNotifier {
 
     // Add initialization of screen time for child users
     if (_loggedInUser?.role == 'Anak') {
-      _screenTimeRemaining = _loggedInUser?.screenTime ?? 0;
-      if (_screenTimeRemaining > 0) {
+      _screenTimeRemaining =
+          _loggedInUser?.screenTimeEndAt != null ? formatTime : "00:00";
+      if (_screenTimeRemaining != "00:00") {
         startCountdown();
       }
     }
@@ -100,11 +103,15 @@ class UserProvider with ChangeNotifier {
 
     final child = getChildById(childId); // Mendapatkan data anak berdasarkan ID
     if (child != null) {
+      _screenTimeEndAt = DateTime.now().add(Duration(
+          minutes:
+              screenTimeInMinutes)); // Waktu sekarang ditambah dengan menit screen time
       // Update waktu layar anak
       final updatedChild = child.copyWith(
         screenTime: screenTimeInMinutes,
         username: child.username,
         email: child.email,
+        screenTimeEndAt: _screenTimeEndAt,
       );
       // Update daftar user dengan data anak yang sudah diubah
       int index = _users.indexWhere((user) => user.id == child.id);
@@ -113,7 +120,7 @@ class UserProvider with ChangeNotifier {
 
         if (_loggedInUser?.id == childId) {
           _screenTimeRemaining =
-              screenTimeInMinutes; // Initialize countdown basically starting it
+              formatTime; //Initialize countdown basically starting it
           stopCountdown(); // stop the countdown
           startCountdown(); // Start countdown for new screen time
         }
@@ -125,11 +132,10 @@ class UserProvider with ChangeNotifier {
   // Start the countdown timer
   void startCountdown() {
     _timer?.cancel(); // Cancel any existing timer
-    _screenTimeRemaining = _screenTimeRemaining * 60;
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_screenTimeRemaining > 0) {
-        _screenTimeRemaining--; //this should decrease the time by a minute
-        notifyListeners(); //
+      if (_screenTimeRemaining != "00:00" && _screenTimeEndAt != null) {
+        _screenTimeRemaining = formatTime;
+        notifyListeners();
         print('Screen time remaining: $_screenTimeRemaining');
       } else {
         _timer?.cancel(); // Stop timer when time is up
@@ -139,7 +145,7 @@ class UserProvider with ChangeNotifier {
   }
 
   void redirectQuiz() {
-    if (_screenTimeRemaining == 0) {
+    if (_screenTimeRemaining == "00:00") {
       Future.delayed(const Duration(milliseconds: 100), () {
         MyApp.navigatorKey.currentState?.push(
           MaterialPageRoute(builder: (context) => QuizHomePage()),
@@ -151,9 +157,14 @@ class UserProvider with ChangeNotifier {
   }
 
   String get formatTime {
-    int minutes = _screenTimeRemaining ~/ 60;
-    int seconds = _screenTimeRemaining % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    if (_screenTimeEndAt != null) {
+      final remaining = _screenTimeEndAt!.difference(DateTime
+          .now()); // Sisa waktu dengan kalkulasi perbedaan waktu sekarang dan waktu berakhirnya screen time
+      int minutes = remaining.inMinutes % 60;
+      int seconds = remaining.inSeconds % 60;
+      return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    }
+    return "00:00";
   }
 
   // Stop the countdown timer
@@ -168,7 +179,8 @@ class UserProvider with ChangeNotifier {
   }
 
   void addTime(int reward) {
-    _screenTimeRemaining = _screenTimeRemaining + reward;
+    _screenTimeEndAt!.add(Duration(minutes: reward));
+    _screenTimeRemaining = formatTime;
     print('tambah');
     stopCountdown();
     startCountdown();
