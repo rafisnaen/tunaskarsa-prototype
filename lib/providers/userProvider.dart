@@ -5,6 +5,7 @@ import 'package:tunaskarsa/main.dart';
 import 'package:tunaskarsa/pages/quizHomePage.dart';
 import '../models/user.dart';
 import 'dart:async'; //import timer
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Import notifikasi
 
 class UserProvider with ChangeNotifier {
   final List<User> _users = []; // Daftar semua user
@@ -14,17 +15,53 @@ class UserProvider with ChangeNotifier {
   String _screenTimeRemaining =
       "00:00"; // Remaining screen time in minutes, it always starts at 0 for default value
   DateTime?
-      _screenTimeEndAt; // Berakhirnya screen time dalam bentuk datetime agar persistent meskipun logout gabakal reset ke nilai awal
+  _screenTimeEndAt; // Berakhirnya screen time dalam bentuk datetime agar persistent meskipun logout gabakal reset ke nilai awal
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin(); // Deklarasi objek notifikasi
+
   List<User> get users => _users;
   User? get loggedInUser => _loggedInUser;
   String get screenTimeRemaining =>
       _screenTimeRemaining; // Expose remaining screen time
-  // String get formattedTime => formatTime;
+
+  // Inisialisasi notifikasi
+  void _initializeNotifications() {
+    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    final initializationSettings = InitializationSettings(android: android);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  // Menampilkan notifikasi dengan sisa waktu
+  void _showNotification() async {
+    if (_screenTimeRemaining != "00:00") {
+      var androidDetails = AndroidNotificationDetails(
+        'screen_time_channel',
+        'Screen Time',
+        channelDescription: 'Notification for screen time countdown',
+        importance: Importance.high, // Tetap gunakan importance tinggi agar tampil di status bar
+        priority: Priority.high,
+        playSound: false, // Menonaktifkan suara notifikasi
+      );
+      var platformDetails = NotificationDetails(android: androidDetails);
+      await flutterLocalNotificationsPlugin.show(
+        0,
+        'Sisa Waktu',
+        'Sisa waktu: $_screenTimeRemaining',
+        platformDetails,
+        payload: 'ScreenTime',
+      );
+    }
+  }
+
+
+  // Menghapus notifikasi
+  void _cancelNotification() async {
+    await flutterLocalNotificationsPlugin.cancel(0);
+  }
 
   // Login user berdasarkan email dan password
   void login(String email, String password) {
     _loggedInUser = _users.firstWhere(
-      (user) => user.email == email && user.password == password,
+          (user) => user.email == email && user.password == password,
       orElse: () => throw Exception('User not found'),
     );
     _loggedInUser!.isLoggedIn = true;
@@ -32,8 +69,9 @@ class UserProvider with ChangeNotifier {
     // Add initialization of screen time for child users
     if (_loggedInUser?.role == 'Anak') {
       _screenTimeRemaining =
-          _loggedInUser?.screenTimeEndAt != null ? formatTime : "00:00";
+      _loggedInUser?.screenTimeEndAt != null ? formatTime : "00:00";
       if (_screenTimeRemaining != "00:00") {
+        _initializeNotifications(); // Initialize notifications when logging in
         startCountdown();
       }
     }
@@ -47,6 +85,7 @@ class UserProvider with ChangeNotifier {
       _loggedInUser!.isLoggedIn = false; // Reset status login
       _loggedInUser = null;
       stopCountdown(); // Stop countdown when user logs out
+      _cancelNotification(); // Cancel notification when logging out
       notifyListeners();
     }
   }
@@ -89,7 +128,7 @@ class UserProvider with ChangeNotifier {
       return null; // Hanya orang tua yang bisa melihat anak
     }
     return _users.firstWhere(
-      (user) => user.id == childId && user.role == 'Anak',
+          (user) => user.id == childId && user.role == 'Anak',
       orElse: () =>
           User(email: '', password: '', username: '', role: '', id: ''),
     );
@@ -105,7 +144,7 @@ class UserProvider with ChangeNotifier {
     if (child != null) {
       _screenTimeEndAt = DateTime.now().add(Duration(
           minutes:
-              screenTimeInMinutes)); // Waktu sekarang ditambah dengan menit screen time
+          screenTimeInMinutes)); // Waktu sekarang ditambah dengan menit screen time
       // Update waktu layar anak
       final updatedChild = child.copyWith(
         screenTime: screenTimeInMinutes,
@@ -135,10 +174,11 @@ class UserProvider with ChangeNotifier {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_screenTimeRemaining != "00:00" && _screenTimeEndAt != null) {
         _screenTimeRemaining = formatTime;
+        _showNotification(); // Show notification every second
         notifyListeners();
         print('Screen time remaining: $_screenTimeRemaining');
       } else {
-        _timer?.cancel(); 
+        _timer?.cancel();
         redirectQuiz();
       }
     });
