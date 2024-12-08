@@ -18,10 +18,16 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   static final GlobalKey<NavigatorState> navigatorKey =
-      GlobalKey<NavigatorState>();
+  GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
+    // Memastikan izin notifikasi sudah di-check saat aplikasi dijalankan
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      userProvider.checkAndRequestPermission();
+    });
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,

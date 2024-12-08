@@ -5,6 +5,7 @@ import 'package:tunaskarsa/main.dart';
 import 'package:tunaskarsa/pages/quizHomePage.dart';
 import '../models/user.dart';
 import 'dart:async'; //import timer
+import 'package:permission_handler/permission_handler.dart'; // Import permission handler
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Import notifikasi
 
 class UserProvider with ChangeNotifier {
@@ -14,20 +15,39 @@ class UserProvider with ChangeNotifier {
   Timer? _timer; // Timer for screen time countdown
   String _screenTimeRemaining =
       "00:00"; // Remaining screen time in minutes, it always starts at 0 for default value
-  DateTime?
-  _screenTimeEndAt; // Berakhirnya screen time dalam bentuk datetime agar persistent meskipun logout gabakal reset ke nilai awal
+  DateTime? _screenTimeEndAt; // Berakhirnya screen time dalam bentuk datetime agar persistent meskipun logout gabakal reset ke nilai awal
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin(); // Deklarasi objek notifikasi
 
   List<User> get users => _users;
   User? get loggedInUser => _loggedInUser;
-  String get screenTimeRemaining =>
-      _screenTimeRemaining; // Expose remaining screen time
+  String get screenTimeRemaining => _screenTimeRemaining; // Expose remaining screen time
 
   // Inisialisasi notifikasi
   void _initializeNotifications() {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     final initializationSettings = InitializationSettings(android: android);
     flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  // Fungsi untuk memeriksa dan meminta izin notifikasi
+  Future<void> checkAndRequestPermission() async {
+    // Cek status izin notifikasi
+    final permissionStatus = await Permission.notification.status;
+
+    if (permissionStatus.isGranted) {
+      print("Izin notifikasi sudah diberikan.");
+    } else {
+      print("Izin notifikasi belum diberikan, meminta izin...");
+
+      // Meminta izin notifikasi
+      final status = await Permission.notification.request();
+
+      if (status.isGranted) {
+        print("Izin notifikasi diberikan.");
+      } else {
+        print("Izin notifikasi ditolak.");
+      }
+    }
   }
 
   // Menampilkan notifikasi dengan sisa waktu
@@ -52,7 +72,6 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-
   // Menghapus notifikasi
   void _cancelNotification() async {
     await flutterLocalNotificationsPlugin.cancel(0);
@@ -66,10 +85,12 @@ class UserProvider with ChangeNotifier {
     );
     _loggedInUser!.isLoggedIn = true;
 
+    // Periksa izin notifikasi setelah login
+    checkAndRequestPermission();
+
     // Add initialization of screen time for child users
     if (_loggedInUser?.role == 'Anak') {
-      _screenTimeRemaining =
-      _loggedInUser?.screenTimeEndAt != null ? formatTime : "00:00";
+      _screenTimeRemaining = _loggedInUser?.screenTimeEndAt != null ? formatTime : "00:00";
       if (_screenTimeRemaining != "00:00") {
         _initializeNotifications(); // Initialize notifications when logging in
         startCountdown();
@@ -143,8 +164,7 @@ class UserProvider with ChangeNotifier {
     final child = getChildById(childId); // Mendapatkan data anak berdasarkan ID
     if (child != null) {
       _screenTimeEndAt = DateTime.now().add(Duration(
-          minutes:
-          screenTimeInMinutes)); // Waktu sekarang ditambah dengan menit screen time
+          minutes: screenTimeInMinutes)); // Waktu sekarang ditambah dengan menit screen time
       // Update waktu layar anak
       final updatedChild = child.copyWith(
         screenTime: screenTimeInMinutes,
