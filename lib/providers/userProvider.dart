@@ -62,6 +62,8 @@ class UserProvider with ChangeNotifier {
         playSound: false, // Menonaktifkan suara notifikasi
       );
       var platformDetails = NotificationDetails(android: androidDetails);
+
+      // Menampilkan atau memperbarui notifikasi
       await flutterLocalNotificationsPlugin.show(
         0,
         'Sisa Waktu',
@@ -71,6 +73,9 @@ class UserProvider with ChangeNotifier {
       );
     }
   }
+
+
+
 
   // Menghapus notifikasi
   void _cancelNotification() async {
@@ -188,21 +193,41 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  // Start the countdown timer
   void startCountdown() {
-    _timer?.cancel(); // Cancel any existing timer
+    _timer?.cancel(); // Membatalkan timer yang sudah ada
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_screenTimeRemaining != "00:00" && _screenTimeEndAt != null) {
         _screenTimeRemaining = formatTime;
-        _showNotification(); // Show notification every second
+
+        // Menampilkan notifikasi hanya saat waktu tersisa 1 menit
+        if (_screenTimeRemaining == "01:00"){
+          _showNotification();
+        }
+        if(_screenTimeRemaining == "30:00"){
+          _showNotification();
+        }
+        if(_screenTimeRemaining == "10:00"){
+          _showNotification();
+        }
+        if(_screenTimeRemaining == "05:00"){
+          _showNotification();
+        }
+        if(_screenTimeRemaining == "00:30"){
+          _showNotification();
+        }
+
         notifyListeners();
         print('Screen time remaining: $_screenTimeRemaining');
       } else {
         _timer?.cancel();
+        _cancelNotification(); // Menghapus notifikasi ketika waktu habis
         redirectQuiz();
       }
     });
   }
+
+
+
 
   void redirectQuiz() {
     if (_screenTimeRemaining == "00:00") {
