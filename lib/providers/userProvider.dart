@@ -179,7 +179,7 @@ class UserProvider with ChangeNotifier {
   }
 
   void addTime(int reward) {
-    _screenTimeEndAt!.add(Duration(minutes: reward));
+    _screenTimeEndAt = DateTime.now().add(Duration(minutes: reward));
     _screenTimeRemaining = formatTime;
     print('tambah');
     stopCountdown();
