@@ -23,8 +23,8 @@ class _HomePageState extends State<HomePage> {
     HomeScreen(), // Halaman utama (Home)
     ProfilePage(), // Halaman profil
     SchedulePage(), // Halaman jadwal
-    ProgressQuizPage(), // Halaman progress quiz
-  ];
+  //   ProgressQuizPage(quizTopics: [],), // Halaman progress quiz
+   ];
 
   @override
   Widget build(BuildContext context) {
@@ -53,10 +53,10 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.calendar_today),
             label: 'Schedule',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: 'Progress Quiz',
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.bar_chart),
+          //   label: 'Progress Quiz',
+          // ),
         ],
       ),
     );
