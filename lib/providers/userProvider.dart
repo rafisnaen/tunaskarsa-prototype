@@ -264,8 +264,12 @@ class UserProvider with ChangeNotifier {
   }
 
   void addTime(int reward) {
-    _screenTimeEndAt = DateTime.now().add(Duration(minutes: reward));
-    _screenTimeRemaining = formatTime;
+    if(_screenTimeEndAt != null){
+      _screenTimeEndAt =_screenTimeEndAt!.add(Duration(minutes: reward));
+    }else{
+      //jika timer 0 di set baru sesuai rewardnya
+      _screenTimeEndAt = DateTime.now().add(Duration(minutes: reward));
+    }
     print('tambah');
     stopCountdown();
     startCountdown();
