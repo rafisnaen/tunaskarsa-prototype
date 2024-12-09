@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tunaskarsa/pages/progressQuizPage.dart';
 import 'package:tunaskarsa/pages/quizPage.dart';
 import 'package:tunaskarsa/providers/userProvider.dart';
+import 'package:tunaskarsa/pages/homePage.dart';
 
 class QuizHomePage extends StatefulWidget {
   @override
@@ -32,7 +34,9 @@ class _QuizHomePageState extends State<QuizHomePage> {
         },
       ],
       "reward": 10, // dalam menit screen time
-      "isCompleted": false // status awal belum selesai
+      "isCompleted": false, // status awal belum selesai
+      "totalQuestions": 3, // Added to track total questions
+      "completedQuestions": 0 // Added to track completed questions
     },
     {
       "id": 2,
@@ -56,7 +60,9 @@ class _QuizHomePageState extends State<QuizHomePage> {
         },
       ],
       "reward": 15, // dalam menit screen time
-      "isCompleted": false // status awal belum selesai
+      "isCompleted": false, // status awal belum selesai
+      "totalQuestions": 3, // Added to track total questions
+      "completedQuestions": 0 // Added to track completed questions
     },
   ];
 
@@ -88,7 +94,7 @@ class _QuizHomePageState extends State<QuizHomePage> {
         return AlertDialog(
           title: Text("Quiz Selesai"),
           content:
-              Text("Kamu belum menjawab semua soal dengan benar. Coba lagi!"),
+          Text("Kamu belum menjawab semua soal dengan benar. Coba lagi!"),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -104,57 +110,83 @@ class _QuizHomePageState extends State<QuizHomePage> {
   Widget build(BuildContext context) {
     // Filter hanya quiz yang belum selesai
     final availableQuizzes =
-        quizTopics.where((quiz) => !quiz['isCompleted']).toList();
+    quizTopics.where((quiz) => !quiz['isCompleted']).toList();
 
     return Scaffold(
-      appBar: AppBar(title: Text("Play Quiz")),
+      appBar: AppBar(
+        title: Text("Play Quiz"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.bar_chart),
+            onPressed: () {
+              // Pass quizTopics to ProgressQuizPage when navigating
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProgressQuizPage(quizTopics: quizTopics),
+                ),
+              ).then((_) {
+                // Refresh state to reflect any changes made in ProgressQuizPage
+                setState(() {});
+              });
+            },
+          ),
+        ],
+      ),
       body: availableQuizzes.isEmpty
           ? Center(child: Text("Semua quiz sudah selesai!"))
           : ListView.builder(
-              itemCount: availableQuizzes.length,
-              itemBuilder: (context, index) {
-                final topic = availableQuizzes[index];
-                return Card(
-                  margin: EdgeInsets.all(10),
-                  child: ListTile(
-                    title: Text(topic['title'],
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(topic['description']),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("${topic['questions'].length} Soal"),
-                        Text("${topic['reward']} Menit",
-                            style: TextStyle(color: Colors.green)),
-                      ],
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => QuizPage(
-                            topic: topic,
-                            onQuizCompleted: (isPerfect) {
-                              setState(() {
-                                topic['isCompleted'] =
-                                    true; // Tandai quiz selesai
+        itemCount: availableQuizzes.length,
+        itemBuilder: (context, index) {
+          final topic = availableQuizzes[index];
+          return Card(
+            margin: EdgeInsets.all(10),
+            child: ListTile(
+              title: Text(
+                topic['title'],
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(topic['description']),
+              trailing: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("${topic['questions'].length} Soal"),
+                  Text("${topic['reward']} Menit",
+                      style: TextStyle(color: Colors.green)),
+                ],
+              ),
+              onTap: () {
+                // Navigate to QuizPage and handle quiz completion
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QuizPage(
+                      topic: topic,
+                      onQuizCompleted: (isPerfect) {
+                        setState(() {
+                          topic['isCompleted'] = true; // Mark quiz completed
+                          topic['completedQuestions'] = topic['questions'].length; // Track completed questions
 
-                                if (isPerfect) {
-                                  final reward = topic['reward'];
-                                  _reward(reward);
-                                } else {
-                                  _incompleted();
-                                }
-                              });
-                            },
-                          ),
-                        ),
-                      );
-                    },
+                          if (isPerfect) {
+                            final reward = topic['reward'];
+                            _reward(reward);
+                          } else {
+                            _incompleted();
+                          }
+                        });
+                      },
+                    ),
                   ),
-                );
+                ).then((_) {
+                  // Refresh state after returning from QuizPage
+                  setState(() {});
+                });
               },
             ),
+          );
+        },
+      ),
     );
   }
 }
+
