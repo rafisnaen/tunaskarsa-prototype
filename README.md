@@ -1,16 +1,13 @@
-# tunaskarsa
+# 🪴Tunaskarsa
+### Children's supervision in playing cellphone that regulated by parents settings 👶🤶
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+#### ⛓️One account sets other account rules 🔗
+- Parent account can connected to other accounts with link
+- Parents can set the timer to forcibly open and locked the app, to each kid account
+- Parents can set the tasks in each account
+- App also served learning tasks by default
+  
+#### 😇 When learning comes with responsibilty ⚠️
+- When the app opened and locked, kid should do the task appears in the app
+- The time increases for each task completed, and kid can continue the activity
+- When the time gets zero (0), kid should do the task again to continue the activity
