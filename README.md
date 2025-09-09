@@ -10,4 +10,4 @@
 #### 😇 When learning comes with responsibilty ⚠️
 - When the app opened and locked, kid should do the task appears in the app
 - The time increases for each task completed, and kid can continue the activity
-- When the time gets zero (0), kid should do the task again to continue the activity
+- When the time gets zero (00:00), kid should do the task again to continue the activity
