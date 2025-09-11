@@ -11,3 +11,7 @@
 - When the app opened and locked, kid should do the task appears in the app
 - The time increases for each task completed, and kid can continue the activity
 - When the time gets zero (00:00), kid should do the task again to continue the activity
+
+---
+
+🛠️ Build APK : [Access Heree 👼](https://drive.google.com/drive/folders/1WJvogS6E0fj49HU1iWD132r9bOl8b-ZG)
